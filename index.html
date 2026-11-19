@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta id="theme-color" name="theme-color" content="#17211b">
+    <title>Destructochess</title>
+    <script type="module" crossorigin src="./assets/index-CfYcaYyB.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DI4p75xT.css">
+  </head>
+  <body>
+    <main id="app" class="app-shell">
+      <header class="masthead">
+        <div class="masthead__brand">
+          <h1>Destructochess</h1>
+        </div>
+        <div class="masthead__tools">
+          <details class="settings-menu">
+            <summary class="settings-menu__trigger" aria-label="Settings" title="Settings">⚙︎</summary>
+            <div class="settings-menu__panel">
+              <p class="settings-menu__title">Settings</p>
+              <label class="theme-toggle">
+                <input id="theme-toggle" type="checkbox" checked>
+                <span>Dark theme</span>
+              </label>
+              <fieldset id="capture-cues" class="capture-options">
+                <legend>Capture highlights</legend>
+                <div class="capture-options__segments">
+                  <label class="capture-options__option">
+                    <input type="radio" name="capture-cue" value="capturers" checked>
+                    <span>Capturing pieces</span>
+                  </label>
+                  <label class="capture-options__option">
+                    <input type="radio" name="capture-cue" value="capturable">
+                    <span>Capturable pieces</span>
+                  </label>
+                  <label class="capture-options__option">
+                    <input type="radio" name="capture-cue" value="off">
+                    <span>Neither</span>
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          </details>
+        </div>
+      </header>
+
+      <div class="game-layout">
+        <aside class="game-rail game-rail--position" aria-label="Position information">
+          <div class="mode-heading">
+            <p class="mode-heading__eyebrow">Untimed play</p>
+            <h2 id="mode-name">Base</h2>
+            <p id="mode-summary">Lose all of your pieces to win.</p>
+          </div>
+
+          <div class="status-block">
+            <p class="status-block__label">Position</p>
+            <p id="game-status" class="game-status" role="status" aria-live="polite" aria-atomic="true">Loading position...</p>
+            <p id="move-counter" class="move-counter">Moves without capture: 0 / 60</p>
+          </div>
+
+        </aside>
+
+        <section class="board-stage" aria-label="Game board">
+          <div class="board-frame">
+            <div id="board" class="board" role="grid" aria-label="Destructochess board"></div>
+          </div>
+        </section>
+
+        <aside class="game-rail game-rail--activity" aria-label="Game activity">
+          <section class="captured-tray-panel captured-tray-panel--black" aria-label="Black pieces lost">
+            <div class="captured-tray__heading">
+              <span id="black-captured-label" class="captured-tray__label">Black pieces lost</span>
+              <span id="black-remaining" class="captured-tray__remaining">16 remaining</span>
+            </div>
+            <div id="black-captured" class="captured-tray__pieces"></div>
+          </section>
+
+          <section class="rail-section history-panel" aria-labelledby="history-title">
+            <h3 id="history-title" class="rail-section__title">Move history</h3>
+            <div id="move-history" class="move-history" role="list" aria-label="Move history"></div>
+          </section>
+
+          <section class="captured-tray-panel captured-tray-panel--white" aria-label="White pieces lost">
+            <div class="captured-tray__heading">
+              <span id="white-captured-label" class="captured-tray__label">White pieces lost</span>
+              <span id="white-remaining" class="captured-tray__remaining">16 remaining</span>
+            </div>
+            <div id="white-captured" class="captured-tray__pieces"></div>
+          </section>
+
+          <div class="game-actions" aria-label="Game actions">
+            <button id="undo-move" class="game-action" type="button" disabled>Undo move</button>
+            <button id="resign-game" class="game-action game-action--danger" type="button">Resign (White)</button>
+            <button id="new-game" class="game-action game-action--primary" type="button">New game</button>
+          </div>
+
+          <button id="flip-board" class="flip-button" type="button" aria-pressed="false">
+            <span class="flip-button__icon" aria-hidden="true">↻</span>
+            Flip board
+          </button>
+        </aside>
+      </div>
+
+      <footer class="page-foot">
+        <span>Mode: <span id="footer-mode">Base</span></span>
+        <span>Local game</span>
+      </footer>
+
+      <dialog id="promotion-dialog" class="promotion-dialog" aria-labelledby="promotion-title">
+        <form method="dialog" class="promotion-dialog__content">
+          <p class="promotion-dialog__eyebrow">Pawn promotion</p>
+          <h2 id="promotion-title">Choose a piece</h2>
+          <div class="promotion-choices">
+            <button type="button" data-promotion="Q"><span aria-hidden="true">♛︎</span><span>Queen</span></button>
+            <button type="button" data-promotion="R"><span aria-hidden="true">♜︎</span><span>Rook</span></button>
+            <button type="button" data-promotion="B"><span aria-hidden="true">♝︎</span><span>Bishop</span></button>
+            <button type="button" data-promotion="N"><span aria-hidden="true">♞︎</span><span>Knight</span></button>
+          </div>
+          <button type="button" class="dialog-cancel" data-promotion-cancel>Cancel</button>
+        </form>
+      </dialog>
+
+      <dialog id="new-game-dialog" class="control-dialog" aria-labelledby="new-game-title">
+        <form method="dialog" class="control-dialog__content">
+          <p class="promotion-dialog__eyebrow">New game</p>
+          <h2 id="new-game-title">Choose a mode</h2>
+          <p id="new-game-load-error" class="load-error" role="alert" hidden></p>
+          <fieldset class="mode-options">
+            <legend>Game mode</legend>
+            <label><input type="radio" name="game-mode" value="base" checked> Base</label>
+            <label><input type="radio" name="game-mode" value="kingball"> Kingball</label>
+          </fieldset>
+          <div class="dialog-actions">
+            <button id="confirm-new-game" class="dialog-primary" type="button">Start game</button>
+            <button id="cancel-new-game" class="dialog-cancel" type="button">Cancel</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="abandon-dialog" class="control-dialog" aria-labelledby="abandon-title">
+        <div class="control-dialog__content">
+          <p class="promotion-dialog__eyebrow">New game</p>
+          <h2 id="abandon-title">Abandon current game?</h2>
+          <p class="dialog-copy">The current game will be replaced.</p>
+          <div class="dialog-actions">
+            <button id="confirm-abandon" class="dialog-primary" type="button">Abandon</button>
+            <button id="cancel-abandon" class="dialog-cancel" type="button" autofocus>Cancel</button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="resign-dialog" class="control-dialog" aria-labelledby="resign-title">
+        <div class="control-dialog__content">
+          <p class="promotion-dialog__eyebrow">Resign</p>
+          <h2 id="resign-title">Resign this game?</h2>
+          <p id="resign-message" class="dialog-copy"></p>
+          <div class="dialog-actions">
+            <button id="confirm-resign" class="dialog-primary dialog-primary--danger" type="button">Resign</button>
+            <button id="cancel-resign" class="dialog-cancel" type="button" autofocus>Cancel</button>
+          </div>
+        </div>
+      </dialog>
+    </main>
+  </body>
+</html>
