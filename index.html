@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta id="theme-color" name="theme-color" content="#17211b">
     <title>Destructochess</title>
-    <script type="module" crossorigin src="./assets/index-CfYcaYyB.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DI4p75xT.css">
+    <script type="module" crossorigin src="./assets/index-knQERqVj.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BwBv3E9y.css">
   </head>
   <body>
     <main id="app" class="app-shell">
@@ -45,6 +45,22 @@
         </div>
       </header>
 
+      <section id="main-menu" class="main-menu" aria-label="Main menu" hidden>
+        <div class="main-menu__choices">
+          <button id="menu-local-game" class="menu-choice menu-choice--primary" type="button">
+            <span class="menu-choice__title">Local hotseat game</span>
+          </button>
+          <button id="menu-play-bot" class="menu-choice menu-choice--primary" type="button">
+            <span class="menu-choice__title">Play vs bot</span>
+          </button>
+        </div>
+        <p id="main-menu-error" class="load-error" role="alert" hidden></p>
+      </section>
+
+      <section id="game-screen" class="game-screen" hidden>
+      <div class="game-topbar">
+        <button id="return-to-menu" class="game-action" type="button">Main menu</button>
+      </div>
       <div class="game-layout">
         <aside class="game-rail game-rail--position" aria-label="Position information">
           <div class="mode-heading">
@@ -58,6 +74,11 @@
             <p id="game-status" class="game-status" role="status" aria-live="polite" aria-atomic="true">Loading position...</p>
             <p id="move-counter" class="move-counter">Moves without capture: 0 / 60</p>
           </div>
+          <p id="players-line" class="players-line" hidden></p>
+          <section id="bot-debug" class="bot-debug" aria-label="Bot search details" hidden>
+            <p class="bot-debug__title">Bot search</p>
+            <pre id="bot-debug-content" class="bot-debug__content"></pre>
+          </section>
 
         </aside>
 
@@ -65,6 +86,10 @@
           <div class="board-frame">
             <div id="board" class="board" role="grid" aria-label="Destructochess board"></div>
           </div>
+          <button id="flip-board" class="flip-button" type="button" aria-pressed="false">
+            <span class="flip-button__icon" aria-hidden="true">↻</span>
+            Flip board
+          </button>
         </section>
 
         <aside class="game-rail game-rail--activity" aria-label="Game activity">
@@ -90,22 +115,22 @@
           </section>
 
           <div class="game-actions" aria-label="Game actions">
-            <button id="undo-move" class="game-action" type="button" disabled>Undo move</button>
+            <button id="undo-move" class="game-action game-action--undo" type="button" disabled>
+              <span class="game-action__icon" aria-hidden="true">↶</span>
+              <span class="game-action__label">Undo</span>
+            </button>
+            <button id="offer-draw" class="game-action" type="button" hidden>Offer draw</button>
             <button id="resign-game" class="game-action game-action--danger" type="button">Resign (White)</button>
             <button id="new-game" class="game-action game-action--primary" type="button">New game</button>
           </div>
-
-          <button id="flip-board" class="flip-button" type="button" aria-pressed="false">
-            <span class="flip-button__icon" aria-hidden="true">↻</span>
-            Flip board
-          </button>
         </aside>
       </div>
 
       <footer class="page-foot">
         <span>Mode: <span id="footer-mode">Base</span></span>
-        <span>Local game</span>
+        <span id="footer-game-type">Local game</span>
       </footer>
+      </section>
 
       <dialog id="promotion-dialog" class="promotion-dialog" aria-labelledby="promotion-title">
         <form method="dialog" class="promotion-dialog__content">
@@ -121,21 +146,102 @@
         </form>
       </dialog>
 
-      <dialog id="new-game-dialog" class="control-dialog" aria-labelledby="new-game-title">
-        <form method="dialog" class="control-dialog__content">
-          <p class="promotion-dialog__eyebrow">New game</p>
-          <h2 id="new-game-title">Choose a mode</h2>
-          <p id="new-game-load-error" class="load-error" role="alert" hidden></p>
-          <fieldset class="mode-options">
-            <legend>Game mode</legend>
-            <label><input type="radio" name="game-mode" value="base" checked> Base</label>
-            <label><input type="radio" name="game-mode" value="kingball"> Kingball</label>
-          </fieldset>
-          <div class="dialog-actions">
+      <dialog id="new-game-dialog" class="control-dialog setup-dialog" aria-labelledby="new-game-title">
+        <form method="dialog" class="control-dialog__content setup-dialog__content">
+          <div class="setup-dialog__fields">
+            <h2 id="new-game-title">Local hotseat game</h2>
+            <p id="new-game-load-error" class="load-error" role="alert" hidden></p>
+            <fieldset class="mode-options setup-options setup-options--mode">
+              <legend>Game mode</legend>
+              <label class="setup-choice">
+                <input type="radio" name="game-mode" value="base" checked>
+                <span class="setup-choice__label">Base</span>
+              </label>
+              <label class="setup-choice">
+                <input type="radio" name="game-mode" value="kingball">
+                <span class="setup-choice__label">Kingball</span>
+              </label>
+            </fieldset>
+          </div>
+          <div class="setup-dialog__actions">
             <button id="confirm-new-game" class="dialog-primary" type="button">Start game</button>
-            <button id="cancel-new-game" class="dialog-cancel" type="button">Cancel</button>
           </div>
         </form>
+      </dialog>
+
+      <dialog id="bot-setup-dialog" class="control-dialog setup-dialog" aria-labelledby="bot-setup-title">
+        <form method="dialog" class="control-dialog__content setup-dialog__content">
+          <div class="setup-dialog__fields">
+            <h2 id="bot-setup-title">Play vs bot</h2>
+            <fieldset class="mode-options setup-options setup-options--mode">
+              <legend>Game mode</legend>
+              <label class="setup-choice">
+                <input type="radio" name="bot-mode" value="base" checked>
+                <span class="setup-choice__label">Base</span>
+              </label>
+              <label class="setup-choice">
+                <input type="radio" name="bot-mode" value="kingball">
+                <span class="setup-choice__label">Kingball</span>
+              </label>
+            </fieldset>
+            <fieldset class="mode-options setup-options setup-options--color">
+              <legend>Your color</legend>
+              <label class="setup-choice setup-choice--color">
+                <input type="radio" name="human-color" value="w" checked>
+                <span class="setup-choice__pawn board__piece--white" aria-hidden="true">
+                  <span class="board__piece-outline board__piece-outline--white">♟︎</span>
+                  <span class="board__piece-backdrop board__piece-backdrop--white">♟︎</span>
+                  <span class="board__piece-face">♟︎</span>
+                </span>
+                <span class="setup-choice__label">White</span>
+              </label>
+              <label class="setup-choice setup-choice--color">
+                <input type="radio" name="human-color" value="random">
+                <span class="setup-choice__icon setup-choice__icon--die" aria-hidden="true">⚄︎</span>
+                <span class="setup-choice__label">Random</span>
+              </label>
+              <label class="setup-choice setup-choice--color">
+                <input type="radio" name="human-color" value="b">
+                <span class="setup-choice__pawn board__piece--black" aria-hidden="true">
+                  <span class="board__piece-outline">♟︎</span>
+                  <span class="board__piece-backdrop">♟︎</span>
+                  <span class="board__piece-face">♟︎</span>
+                </span>
+                <span class="setup-choice__label">Black</span>
+              </label>
+            </fieldset>
+            <fieldset id="bot-level-options" class="bot-level-options">
+              <legend>Difficulty</legend>
+              <div id="bot-level-choices" class="bot-level-options__list"></div>
+            </fieldset>
+          </div>
+          <div class="setup-dialog__actions">
+            <button id="start-bot-game" class="dialog-primary" type="button">Start game</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="offer-draw-dialog" class="control-dialog" aria-labelledby="offer-draw-title">
+        <div class="control-dialog__content">
+          <p class="promotion-dialog__eyebrow">Draw offer</p>
+          <h2 id="offer-draw-title">Offer a draw to the bot?</h2>
+          <div class="dialog-actions">
+            <button id="confirm-offer-draw" class="dialog-primary" type="button">Offer draw</button>
+            <button id="cancel-offer-draw" class="dialog-cancel" type="button" autofocus>Cancel</button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="bot-resign-dialog" class="control-dialog" aria-labelledby="bot-resign-title" tabindex="-1">
+        <div class="control-dialog__content">
+          <p class="promotion-dialog__eyebrow">Bot resignation</p>
+          <h2 id="bot-resign-title">The bot resigns</h2>
+          <p class="dialog-copy">The bot found a forced loss.</p>
+          <div class="dialog-actions">
+            <button id="accept-bot-resignation" class="dialog-primary" type="button">Accept resignation</button>
+            <button id="continue-after-bot-resignation" class="dialog-cancel" type="button">Keep playing</button>
+          </div>
+        </div>
       </dialog>
 
       <dialog id="abandon-dialog" class="control-dialog" aria-labelledby="abandon-title">
