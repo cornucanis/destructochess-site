@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta id="theme-color" name="theme-color" content="#17211b">
     <title>Destructochess</title>
-    <script type="module" crossorigin src="./assets/index-knQERqVj.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BwBv3E9y.css">
+    <script type="module" crossorigin src="./assets/index-DTi_oWop.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DmrYiCgw.css">
   </head>
   <body>
     <main id="app" class="app-shell">
@@ -64,7 +64,7 @@
       <div class="game-layout">
         <aside class="game-rail game-rail--position" aria-label="Position information">
           <div class="mode-heading">
-            <p class="mode-heading__eyebrow">Untimed play</p>
+            <p id="time-control-eyebrow" class="mode-heading__eyebrow">Untimed play</p>
             <h2 id="mode-name">Base</h2>
             <p id="mode-summary">Lose all of your pieces to win.</p>
           </div>
@@ -101,9 +101,19 @@
             <div id="black-captured" class="captured-tray__pieces"></div>
           </section>
 
+          <section id="black-clock" class="player-clock player-clock--black" aria-label="Black clock" hidden>
+            <span id="black-clock-label" class="player-clock__label">Black</span>
+            <span id="black-clock-time" class="player-clock__time">0:00</span>
+          </section>
+
           <section class="rail-section history-panel" aria-labelledby="history-title">
             <h3 id="history-title" class="rail-section__title">Move history</h3>
             <div id="move-history" class="move-history" role="list" aria-label="Move history"></div>
+          </section>
+
+          <section id="white-clock" class="player-clock player-clock--white" aria-label="White clock" hidden>
+            <span id="white-clock-label" class="player-clock__label">White</span>
+            <span id="white-clock-time" class="player-clock__time">0:00</span>
           </section>
 
           <section class="captured-tray-panel captured-tray-panel--white" aria-label="White pieces lost">
@@ -147,7 +157,7 @@
       </dialog>
 
       <dialog id="new-game-dialog" class="control-dialog setup-dialog" aria-labelledby="new-game-title">
-        <form method="dialog" class="control-dialog__content setup-dialog__content">
+        <form method="dialog" class="control-dialog__content setup-dialog__content" novalidate>
           <div class="setup-dialog__fields">
             <h2 id="new-game-title">Local hotseat game</h2>
             <p id="new-game-load-error" class="load-error" role="alert" hidden></p>
@@ -162,6 +172,45 @@
                 <span class="setup-choice__label">Kingball</span>
               </label>
             </fieldset>
+            <fieldset class="mode-options setup-options setup-options--time" data-time-control-group="local">
+              <legend>Time control</legend>
+              <label class="setup-choice setup-choice--time setup-choice--time-wide">
+                <input type="radio" name="local-time-control" value="unlimited" checked>
+                <span class="setup-choice__label">Unlimited</span>
+                <span class="setup-choice__meta">No clock</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="local-time-control" value="bullet">
+                <span class="setup-choice__label">Bullet</span>
+                <span class="setup-choice__meta">2+1</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="local-time-control" value="blitz">
+                <span class="setup-choice__label">Blitz</span>
+                <span class="setup-choice__meta">3+2</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="local-time-control" value="rapid">
+                <span class="setup-choice__label">Rapid</span>
+                <span class="setup-choice__meta">15+10</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="local-time-control" value="custom">
+                <span class="setup-choice__label">Custom</span>
+                <span class="setup-choice__meta">Set time</span>
+              </label>
+            </fieldset>
+            <div id="local-custom-time" class="custom-time-fields" hidden>
+              <label class="custom-time-field" for="local-custom-minutes">
+                <span>Minutes (1–180)</span>
+                <input id="local-custom-minutes" type="number" min="1" max="180" step="1" inputmode="numeric" value="5">
+              </label>
+              <label class="custom-time-field" for="local-custom-increment">
+                <span>Increment sec (0–60)</span>
+                <input id="local-custom-increment" type="number" min="0" max="60" step="1" inputmode="numeric" value="0">
+              </label>
+            </div>
+            <p id="local-time-error" class="load-error setup-time-error" role="alert" hidden></p>
           </div>
           <div class="setup-dialog__actions">
             <button id="confirm-new-game" class="dialog-primary" type="button">Start game</button>
@@ -170,7 +219,7 @@
       </dialog>
 
       <dialog id="bot-setup-dialog" class="control-dialog setup-dialog" aria-labelledby="bot-setup-title">
-        <form method="dialog" class="control-dialog__content setup-dialog__content">
+        <form method="dialog" class="control-dialog__content setup-dialog__content" novalidate>
           <div class="setup-dialog__fields">
             <h2 id="bot-setup-title">Play vs bot</h2>
             <fieldset class="mode-options setup-options setup-options--mode">
@@ -210,6 +259,45 @@
                 <span class="setup-choice__label">Black</span>
               </label>
             </fieldset>
+            <fieldset class="mode-options setup-options setup-options--time" data-time-control-group="bot">
+              <legend>Time control</legend>
+              <label class="setup-choice setup-choice--time setup-choice--time-wide">
+                <input type="radio" name="bot-time-control" value="unlimited" checked>
+                <span class="setup-choice__label">Unlimited</span>
+                <span class="setup-choice__meta">No clock</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="bot-time-control" value="bullet">
+                <span class="setup-choice__label">Bullet</span>
+                <span class="setup-choice__meta">2+1</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="bot-time-control" value="blitz">
+                <span class="setup-choice__label">Blitz</span>
+                <span class="setup-choice__meta">3+2</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="bot-time-control" value="rapid">
+                <span class="setup-choice__label">Rapid</span>
+                <span class="setup-choice__meta">15+10</span>
+              </label>
+              <label class="setup-choice setup-choice--time">
+                <input type="radio" name="bot-time-control" value="custom">
+                <span class="setup-choice__label">Custom</span>
+                <span class="setup-choice__meta">Set time</span>
+              </label>
+            </fieldset>
+            <div id="bot-custom-time" class="custom-time-fields" hidden>
+              <label class="custom-time-field" for="bot-custom-minutes">
+                <span>Minutes (1–180)</span>
+                <input id="bot-custom-minutes" type="number" min="1" max="180" step="1" inputmode="numeric" value="5">
+              </label>
+              <label class="custom-time-field" for="bot-custom-increment">
+                <span>Increment sec (0–60)</span>
+                <input id="bot-custom-increment" type="number" min="0" max="60" step="1" inputmode="numeric" value="0">
+              </label>
+            </div>
+            <p id="bot-time-error" class="load-error setup-time-error" role="alert" hidden></p>
             <fieldset id="bot-level-options" class="bot-level-options">
               <legend>Difficulty</legend>
               <div id="bot-level-choices" class="bot-level-options__list"></div>
